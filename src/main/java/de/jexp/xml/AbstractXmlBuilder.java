@@ -15,8 +15,10 @@ public abstract class AbstractXmlBuilder implements XmlBuilder {
 
     }
 
-    public void endTag(final Tag<?> tag) {
+    public void startTags(Tag<?> tag) {
+    }
 
+    public void endTags(Tag<?> tag) {
     }
 
     public void addText(final Tag<?> tag, final String text) {

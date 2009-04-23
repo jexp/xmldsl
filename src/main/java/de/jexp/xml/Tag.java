@@ -1,5 +1,7 @@
 package de.jexp.xml;
 
+import com.sun.tools.jdi.EventSetImpl;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.text.Format;
@@ -55,10 +57,11 @@ public class Tag<E extends Enum<E>> {
         return builder.toXml(this);
     }
 
-    public Tag<E> tags(final Tag<?>... children) {
+    public Tag<E> add(final Tag<?>... children) {
         for (final Tag<?> child : children) {
             builder.addChild(this, child);
         }
+        builder.endTags(this);
         return this;
     }
 
@@ -67,8 +70,13 @@ public class Tag<E extends Enum<E>> {
         return this;
     }
 
-    public Tag<E> end() {
-        builder.endTag(this);
+    public Tag<E> tags() {
+        builder.startTags(this);
         return this;
+    }
+
+    @Override
+    public String toString() {
+        return "<"+getName()+">";
     }
 }

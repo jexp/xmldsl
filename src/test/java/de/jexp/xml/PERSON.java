@@ -7,6 +7,6 @@ package de.jexp.xml;
 public enum PERSON {
     NAME, AGE, SIZE;
     public enum CHILD {
-        NAME, GEBURT, GENDER
+        NAME, BIRTHDAY, GENDER
     }
 }

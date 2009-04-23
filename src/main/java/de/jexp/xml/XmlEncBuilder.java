@@ -5,6 +5,7 @@ import org.znerd.xmlenc.XMLOutputter;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.util.Stack;
 
 /**
  * @author Michael Hunger
@@ -36,14 +37,6 @@ public class XmlEncBuilder extends AbstractXmlBuilder {
         }
     }
 
-    @Override
-    public void endTag(final Tag<?> tag) {
-        try {
-            xml.endTag();
-        } catch (IOException e) {
-            throw new RuntimeException("Error adding ending tag " + tag, e);
-        }
-    }
 
     @Override
     public void addText(final Tag<?> tag, final String text) {
@@ -65,14 +58,44 @@ public class XmlEncBuilder extends AbstractXmlBuilder {
         }
     }
 
+    final static Tag<?> block = null;
+    final Stack<Tag> stack = new Stack<Tag>();
+
     @Override
     public <E extends Enum<E>> Tag<E> tag(final Class<E> tagEnum) {
         final Tag<E> tag = new Tag<E>(tagEnum, this);
         try {
+            if (!stack.isEmpty() && stack.peek()!=block) endTag(stack.pop());
+
             xml.startTag(tag.getName());
+
+            stack.push(tag);
             return tag;
-        } catch (IOException e) {
+        } catch (Exception e) {
             throw new RuntimeException("Error starting tag " + tag, e);
+        }
+    }
+
+    @Override
+    public void startTags(final Tag<?> tag) {
+        stack.push(block);
+    }
+
+    @Override
+    public void endTags(final Tag<?> tag) {
+        while (!stack.isEmpty()) {
+            final Tag<?> stackTag = stack.pop();
+            if (stackTag != block)
+                endTag(stackTag);
+            else break;
+        }
+    }
+
+    private void endTag(final Tag<?> tag) {
+        try {
+            xml.endTag();
+        } catch (Exception e) {
+            throw new RuntimeException("Error adding ending tag " + tag, e);
         }
     }
 }

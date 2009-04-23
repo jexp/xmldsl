@@ -23,5 +23,7 @@ public interface XmlBuilder {
 
     void addAttribute(Tag<?> tag, String name, String value);
 
-    void endTag(Tag<?> tag);
+    void startTags(Tag<?> tag);
+
+    void endTags(Tag<?> tag);
 }
