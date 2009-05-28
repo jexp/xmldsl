@@ -2,6 +2,7 @@ package de.jexp.xml;
 
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static de.jexp.xml.PERSON.*;
 
 import java.util.Date;
@@ -15,6 +16,15 @@ import java.io.StringWriter;
  * @since 22.04.2009
  */
 public class XmlBuilderTest {
+    private static final int COUNT = 10000;
+    private static final String COMPLEX_CONTENT = "<CHILD>" +
+            "<PERSON/><CHILD/>" +
+            "<PERSON>" +
+            "<CHILD/><CHILD/><CHILD/><CHILD/>" +
+            "</PERSON>" +
+            "</CHILD>" +
+            "<CHILD/>";
+    private static final String COMPLEX_XML = "<PERSON>" + COMPLEX_CONTENT + "</PERSON>";
 
     @Test
     public void testCreateXml() throws ParseException {
@@ -76,16 +86,27 @@ public class XmlBuilderTest {
                         )),
                 xml.tag(CHILD.class)
         );
-        final String expected=
-                "<PERSON>" +
-                    "<CHILD>" +
-                        "<PERSON/><CHILD/>" +
-                        "<PERSON>" +
-                            "<CHILD/><CHILD/><CHILD/><CHILD/>" +
-                        "</PERSON>" +
-                    "</CHILD>" +
-                    "<CHILD/>" +
-                "</PERSON>";
-        assertEqualXml(expected, person);
+        assertEqualXml(COMPLEX_XML, person);
+    }
+    @Test(timeout = 750)
+    public void testPerformance() {
+        final XmlBuilder xml = new XmlEncBuilder(new StringWriter());
+        final Tag<PERSON> person = xml.tag(PERSON.class);
+        for (int i=0;i<COUNT;i++) {
+        person.tags().add(
+                xml.tag(CHILD.class).tags().add(
+                        xml.tag(PERSON.class), xml.tag(CHILD.class),
+                        xml.tag(PERSON.class).tags().add(
+                                xml.tag(CHILD.class), xml.tag(CHILD.class)
+                        ).tags().add(
+                                xml.tag(CHILD.class), xml.tag(CHILD.class)
+                        )),
+                xml.tag(CHILD.class)
+        );
+        }
+        final String result = person.toXml();
+        System.out.println("result.length() = " + result.length());
+        assertTrue("generated all "+result.length(),result.length() > COUNT*COMPLEX_CONTENT.length());
+        assertTrue("contains part",result.contains(COMPLEX_CONTENT));
     }
 }
